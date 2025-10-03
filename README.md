@@ -1,3 +1,3 @@
-#AliensWars
+# AliensWars
 
 Небольшая игра для практики по Python, сделана по книге "Изучаем Python 3-e издание"
