@@ -7,7 +7,6 @@ class Settings():
         self.screen_height = 800
         self.bg_color = (0, 0, 0)
 
-
         self.ship_limit = 3
 
         self.bullet_width = 3
