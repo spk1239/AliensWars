@@ -2,6 +2,7 @@ import sys
 from time import sleep
 from settings import Settings
 from game_stats import GameStats
+from scoreboard import Scoreboard
 from ship import Ship
 from bullet import Bullet
 from alien import Alien
@@ -23,6 +24,7 @@ class AlienInvasion:
         pygame.display.set_caption("Alien Invasion")
 
         self.stats = GameStats(self)
+        self.sb = Scoreboard(self)
 
         self.ship = Ship(self)
         self.bullets = pygame.sprite.Group()
@@ -77,15 +79,15 @@ class AlienInvasion:
         if easy_clicked:
             self.difficulty_level = "easy"
             self._set_difficulty()
-            print("Установлена легкая сложность")  # Для отладки
+           
         elif normal_clicked:
             self.difficulty_level = "normal"
             self._set_difficulty()
-            print("Установлена нормальная сложность")  # Для отладки
+         
         elif hard_clicked:
             self.difficulty_level = "hard"
             self._set_difficulty()
-            print("Установлена тяжелая сложность")  # Для отладки
+         
 
     def _set_difficulty(self):
         """Устанавливает настройки сложности в зависимости от выбранного уровня."""
@@ -124,10 +126,17 @@ class AlienInvasion:
 
     def _check_play_button(self, mouse_pos):
         """Запускает новую игру при нажатии кнопки Play."""
-        play_clicked = self.play_button.rect.collidepoint(mouse_pos)
-        if play_clicked and not self.stats.game_active:
-            self._start_game()
-                
+        if self.play_button.rect.collidepoint(mouse_pos):
+            self.stats.reset_stats()
+            self.stats.game_active = True
+            self.sb.prep_score()
+
+            self.aliens.empty()
+            self.bullets.empty()
+
+            self._create_fleet()
+            self.ship.center_ship()
+            
     def _check_keydown_events(self, event):
         if event.key == pygame.K_RIGHT:
             self.ship.moving_right = True
@@ -172,6 +181,12 @@ class AlienInvasion:
 
     def _check_bullet_alien_collisions(self):
         collisions = pygame.sprite.groupcollide(self.bullets, self.aliens, True, True)
+
+        if collisions:
+            for aliens in collisions.values():
+                self.stats.score += self.settings.alien_points * len(aliens)
+            self.sb.prep_score()
+            self.sb.check_high_score()
 
         if not self.aliens:
             self.bullets.empty()
@@ -268,6 +283,7 @@ class AlienInvasion:
         for bullet in self.bullets.sprites():
             bullet.draw_bullet()
         self.aliens.draw(self.screen)
+        self.sb.show_score()
 
         if not self.stats.game_active:
             # Отображаем все кнопки
